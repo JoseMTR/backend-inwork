@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.core.seguridad import es_staff, obtener_usuario_actual, solo_staff, verificar_dueno, verificar_permiso
+from app.core.seguridad import obtener_usuario_actual, solo_staff, ve_todo, verificar_dueno, verificar_permiso
 from app.models.contratacion import Contratacion, ContratacionEstado
 from app.repositories.auditoria_repo import AuditoriaRepository
 from app.repositories.contratacion_repo import ContratacionRepository
@@ -17,7 +17,7 @@ def buscar_contratacion(id_contratacion: int, usuario: dict):
     if not contratacion:
         raise HTTPException(status_code=404, detail="Contratacion no encontrada")
     participantes = (contratacion["id_cliente"], contratacion["id_trabajador"])
-    if usuario["id_usuario"] not in participantes and not es_staff(usuario):
+    if usuario["id_usuario"] not in participantes and not ve_todo(usuario):
         raise HTTPException(status_code=403, detail="No participas en esta contratacion")
     return contratacion
 
@@ -30,7 +30,7 @@ def crear_custodia(id_contratacion: int):
 @router.get("/")
 def listar_contrataciones(usuario: dict = Depends(obtener_usuario_actual)):
     verificar_permiso(usuario, "contrataciones", "leer")
-    if es_staff(usuario):
+    if ve_todo(usuario):
         return repo.obtener_todos()
     return repo.obtener_por_usuario(usuario["id_usuario"])
 

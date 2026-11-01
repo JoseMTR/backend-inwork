@@ -1,9 +1,12 @@
 from app.core.database import Database
 from app.models.usuario import UsuarioActualizar, UsuarioRegistro
 
-# Columnas que se devuelven (NUNCA se devuelve el password)
+# Columnas que se devuelven (NUNCA se devuelve el password).
+# Tambien trae el nombre del rol para no tener que mostrar el id en el frontend.
 COLUMNAS = """
-    id_usuario, id_rol, id_ciudad, nombre, apellido, foto_perfil, correo,
+    id_usuario, id_rol,
+    (SELECT r.nombre FROM roles r WHERE r.id_rol = usuarios.id_rol) AS rol,
+    id_ciudad, nombre, apellido, foto_perfil, correo,
     correo_verificado, telefono, tipo_identificacion, numero_identificacion,
     fecha_nacimiento, descripcion, direccion, promedio_calificacion,
     total_calificaciones, created, updated, estado
@@ -18,7 +21,15 @@ class UsuarioRepository:
         conn = self.db.get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute(f"SELECT {COLUMNAS} FROM usuarios WHERE estado = TRUE ORDER BY id_usuario ASC;")
+            # Ademas de los datos, trae el nombre de la ciudad
+            query = f"""
+                SELECT {COLUMNAS},
+                       (SELECT c.nombre FROM ciudades c WHERE c.id_ciudad = usuarios.id_ciudad) AS ciudad
+                FROM usuarios
+                WHERE estado = TRUE
+                ORDER BY id_usuario ASC;
+            """
+            cursor.execute(query)
             return cursor.fetchall()
         finally:
             conn.close()
@@ -33,10 +44,16 @@ class UsuarioRepository:
             conn.close()
 
     def obtener_por_correo(self, correo: str):
+        """Lo usa el login: trae todo (incluido el password) y el nombre del rol."""
         conn = self.db.get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM usuarios WHERE correo = %s;", (correo,))
+            query = """
+                SELECT *, (SELECT r.nombre FROM roles r WHERE r.id_rol = usuarios.id_rol) AS rol
+                FROM usuarios
+                WHERE correo = %s;
+            """
+            cursor.execute(query, (correo,))
             return cursor.fetchone()
         finally:
             conn.close()
@@ -57,7 +74,7 @@ class UsuarioRepository:
         finally:
             conn.close()
 
-    def crear(self, usuario: UsuarioRegistro, password_encriptada: str, id_rol: int = 3):
+    def crear(self, usuario: UsuarioRegistro, password_encriptada: str, id_rol: int = 5):
         conn = self.db.get_connection()
         try:
             cursor = conn.cursor()
@@ -102,6 +119,7 @@ class UsuarioRepository:
             conn.close()
 
     def cambiar_rol(self, id_usuario: int, id_rol: int):
+        """Cambia el rol del usuario (ej: de empleado 5 a empleador 4)."""
         conn = self.db.get_connection()
         try:
             cursor = conn.cursor()

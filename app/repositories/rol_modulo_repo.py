@@ -75,6 +75,25 @@ class RolModuloRepository:
         finally:
             conn.close()
 
+    def obtener_modulos_por_rol(self, id_rol: int):
+        """Los modulos que puede ver un rol, segun la tabla rol_modulo. Con esto se arma el menu."""
+        conn = self.db.get_connection()
+        try:
+            cursor = conn.cursor()
+            query = """
+                SELECT m.nombre, m.descripcion, m.ruta,
+                       rm.puede_crear, rm.puede_leer, rm.puede_editar, rm.puede_eliminar
+                FROM rol_modulo rm
+                INNER JOIN modulos m ON m.id_modulo = rm.id_modulo
+                WHERE rm.id_rol = %s AND rm.puede_leer = TRUE
+                  AND rm.estado = TRUE AND m.estado = TRUE
+                ORDER BY m.id_modulo ASC;
+            """
+            cursor.execute(query, (id_rol,))
+            return cursor.fetchall()
+        finally:
+            conn.close()
+
     def obtener_permiso(self, id_rol: int, nombre_modulo: str):
         conn = self.db.get_connection()
         try:

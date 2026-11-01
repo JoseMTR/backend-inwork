@@ -6,3 +6,4 @@ class Modulo(BaseModel):
     id_modulo: Optional[int] = None
     nombre: str
     descripcion: Optional[str] = None
+    ruta: Optional[str] = None

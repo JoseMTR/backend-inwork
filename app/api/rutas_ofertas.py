@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.core.seguridad import es_staff, obtener_usuario_actual, verificar_dueno, verificar_permiso
+from app.core.seguridad import obtener_usuario_actual, ve_todo, verificar_dueno, verificar_permiso
 from app.models.oferta import Oferta
 from app.repositories.auditoria_repo import AuditoriaRepository
 from app.repositories.contratacion_repo import ContratacionRepository
@@ -17,7 +17,7 @@ auditoria = AuditoriaRepository()
 @router.get("/")
 def listar_ofertas(usuario: dict = Depends(obtener_usuario_actual)):
     verificar_permiso(usuario, "ofertas", "leer")
-    if es_staff(usuario):
+    if ve_todo(usuario):
         return repo.obtener_todos()
     return repo.obtener_por_usuario(usuario["id_usuario"])
 
@@ -29,7 +29,7 @@ def obtener_oferta(id_oferta: int, usuario: dict = Depends(obtener_usuario_actua
     if not oferta:
         raise HTTPException(status_code=404, detail="Oferta no encontrada")
     # La ve quien oferto, el dueno del trabajo o el staff
-    if usuario["id_usuario"] not in (oferta["id_trabajador"], oferta["id_cliente"]) and not es_staff(usuario):
+    if usuario["id_usuario"] not in (oferta["id_trabajador"], oferta["id_cliente"]) and not ve_todo(usuario):
         raise HTTPException(status_code=403, detail="No puedes ver esta oferta")
     return oferta
 

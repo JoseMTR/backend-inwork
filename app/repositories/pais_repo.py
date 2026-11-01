@@ -32,7 +32,7 @@ class PaisRepository:
                 INSERT INTO pais (nombre)
                 VALUES (%s) RETURNING id_pais;
             """
-            cursor.execute(query, (pais.nombre))
+            cursor.execute(query, (pais.nombre,))
             nuevo_id = cursor.fetchone()["id_pais"]
             conn.commit()
             return nuevo_id

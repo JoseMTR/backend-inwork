@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.core.seguridad import es_staff, obtener_usuario_actual, solo_staff, verificar_dueno, verificar_permiso
+from app.core.seguridad import obtener_usuario_actual, ve_todo, solo_staff, verificar_dueno, verificar_permiso
 from app.models.verificacion_identidad import VerificacionIdentidad, VerificacionRevisar
 from app.repositories.verificacion_identidad_repo import VerificacionIdentidadRepository
 
@@ -11,7 +11,7 @@ repo = VerificacionIdentidadRepository()
 @router.get("/")
 def listar_verificaciones(usuario: dict = Depends(obtener_usuario_actual)):
     verificar_permiso(usuario, "verificaciones", "leer")
-    if es_staff(usuario):
+    if ve_todo(usuario):
         return repo.obtener_todos()
     return repo.obtener_por_usuario(usuario["id_usuario"])
 
@@ -22,7 +22,7 @@ def obtener_verificacion(id_verificacion: int, usuario: dict = Depends(obtener_u
     verificacion = repo.obtener_por_id(id_verificacion)
     if not verificacion:
         raise HTTPException(status_code=404, detail="Verificacion no encontrada")
-    verificar_dueno(usuario, verificacion["id_usuario"])
+    verificar_dueno(usuario, verificacion["id_usuario"], solo_lectura=True)
     return verificacion
 
 

@@ -10,12 +10,15 @@ class UsuarioRegistro(BaseModel):
     correo: str
     password: str
     telefono: str
-    tipo_identificacion: str    
+    tipo_identificacion: str
     numero_identificacion: str
     fecha_nacimiento: date
     foto_perfil: Optional[str] = None
     descripcion: Optional[str] = None
     direccion: Optional[str] = None
+    # Al registrarse: 4 = Empleador, 5 = Empleado.
+    # El administrador puede crear con cualquier rol (1 a 5).
+    id_rol: int = 5
 
 
 class UsuarioActualizar(BaseModel):
@@ -39,4 +42,8 @@ class Login(BaseModel):
 
 class CambiarPassword(BaseModel):
     password_actual: str
+    password_nueva: str
+
+
+class RestablecerPassword(BaseModel):
     password_nueva: str
