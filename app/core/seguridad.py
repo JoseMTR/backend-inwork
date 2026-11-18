@@ -56,6 +56,12 @@ def crear_token_sistema() -> str:
 
 
 def obtener_usuario_actual(token: str = Depends(oauth2_scheme)) -> dict:
+    return usuario_desde_token(token)
+
+
+def usuario_desde_token(token: str) -> dict:
+    """Revisa el JWT y devuelve el usuario. La usan las rutas normales y el WebSocket del chat
+    (el WebSocket no tiene encabezado Authorization, por eso recibe el token directamente)."""
     try:
         datos = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id_usuario = int(datos["sub"])

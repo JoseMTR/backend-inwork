@@ -9,6 +9,7 @@ from app.api import (
     rutas_auth,
     rutas_calificaciones,
     rutas_categorias,
+    rutas_chat_equipo,
     rutas_chats,
     rutas_ciudades,
     rutas_contrataciones,
@@ -69,6 +70,7 @@ app.include_router(rutas_adjuntos.router)
 app.include_router(rutas_reportes.router)
 app.include_router(rutas_tokens_usuario.router)
 app.include_router(rutas_auditoria.router)
+app.include_router(rutas_chat_equipo.router)   # chat del equipo en tiempo real (WebSocket)
 
 
 @app.get("/")
